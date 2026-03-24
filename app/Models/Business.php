@@ -6,10 +6,5 @@ use Illuminate\Database\Eloquent\Model;
 
 class Business extends Model
 {
- protected $_fillable = [ 'name', 'username' ];
-
- public function transactions()
- {
-  return $this->hasMany(Transaction::class);
- }
+ protected $fillable = [ 'name' ];
 }

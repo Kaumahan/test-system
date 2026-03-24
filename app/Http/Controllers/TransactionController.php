@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 
 class TransactionController extends Controller
 {
+
  public function index(Request $request)
  {
   $transactions = Transaction::with([ 'business', 'category', 'source' ])
@@ -36,13 +37,11 @@ class TransactionController extends Controller
   $handle = fopen($file->getRealPath(), 'r');
   $header = fgetcsv($handle); // Read header
 
-  // 2. Check if file is empty (only header or totally empty)
   if (!$header || ($row = fgetcsv($handle)) === false) {
    fclose($handle);
    return back()->with('error', 'The uploaded file is empty or has no data rows.');
   }
 
-  // Reset pointer to after header because we just "peeked" at the first row
   rewind($handle);
   fgetcsv($handle);
 
@@ -54,20 +53,9 @@ class TransactionController extends Controller
     continue;
    }
 
-   $biz = Business::where('name', $row[ 3 ])->first() ?: (new Business([ 'name' => $row[ 3 ] ]));
-   if (!$biz->exists) {
-    $biz->save();
-   }
-
-   $cat = Category::where('name', $row[ 4 ])->first() ?: (new Category([ 'name' => $row[ 4 ] ]));
-   if (!$cat->exists) {
-    $cat->save();
-   }
-
-   $src = Source::where('name', $row[ 6 ])->first() ?: (new Source([ 'name' => $row[ 6 ] ]));
-   if (!$src->exists) {
-    $src->save();
-   }
+   $biz = Business::firstOrCreate([ 'name' => $row[ 3 ] ]);
+   $cat = Category::firstOrCreate([ 'name' => $row[ 4 ] ]);
+   $src = Source::firstOrCreate([ 'name' => $row[ 6 ] ]);
 
    // 3. Check for Duplicate Uploads (Integrity Check)
    $exists = Transaction::where([

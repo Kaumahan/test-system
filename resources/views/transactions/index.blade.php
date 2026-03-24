@@ -91,7 +91,7 @@
                             <th class="p-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Date</th>
                             <th class="p-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Details</th>
                             <th class="p-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-right">Amount</th>
-                            <th class="p-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Entity</th>
+                            <th class="p-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Business</th>
                             <th class="p-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center">Status</th>
                         </tr>
                     </thead>

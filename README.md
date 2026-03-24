@@ -22,7 +22,7 @@ A robust, responsive web application built with Laravel and Tailwind CSS for upl
 1. **Clone the repository:**
    ```bash
    git clone [https://github.com/yourusername/transaction-manager.git](https://github.com/yourusername/transaction-manager.git)
-   cd transaction-manager
+   cd transaction-manager  ```
 2.  **Cmd / Bash**
   ```bash
   composer install
@@ -30,11 +30,11 @@ A robust, responsive web application built with Laravel and Tailwind CSS for upl
 3.  **Setup Env using bash :**
   ```bash
     cp .env.example .env
-    php artisan key:generate
+    php artisan key:generate  ```
 
     open new bash and run
   ```bash
-    php artisan serve
+    php artisan serve   ```
 4.  **Update database name on env:**
   if no database create run Xampp and add new database name test_system
   env.

@@ -24,43 +24,52 @@ class TransactionController extends Controller
 
  public function upload(Request $request)
  {
-  $request->validate([ 'csv_file' => 'required|mimes:csv,txt|max:2048' ]);
+  // 1. Validation for file type and existence
+  $request->validate([
+   'csv_file' => 'required|file|mimes:csv,txt|max:2048',
+   ], [
+   'csv_file.mimes'    => 'The file must be a CSV',
+   'csv_file.required' => 'Please select a file to upload.',
+   ]);
 
   $file   = $request->file('csv_file');
   $handle = fopen($file->getRealPath(), 'r');
-  fgetcsv($handle); // Skip header
+  $header = fgetcsv($handle); // Read header
 
-  $count = 0;
+  // 2. Check if file is empty (only header or totally empty)
+  if (!$header || ($row = fgetcsv($handle)) === false) {
+   fclose($handle);
+   return back()->with('error', 'The uploaded file is empty or has no data rows.');
+  }
+
+  // Reset pointer to after header because we just "peeked" at the first row
+  rewind($handle);
+  fgetcsv($handle);
+
+  $count      = 0;
+  $duplicates = 0;
+
   while (($row = fgetcsv($handle)) !== false) {
    if (empty(array_filter($row))) {
     continue;
    }
 
-   // 1. Manual Check for Business
-   $biz = Business::where('name', $row[ 3 ])->first();
-   if (!$biz) {
-    $biz       = new Business();
-    $biz->name = $row[ 3 ];
+   $biz = Business::where('name', $row[ 3 ])->first() ?: (new Business([ 'name' => $row[ 3 ] ]));
+   if (!$biz->exists) {
     $biz->save();
    }
 
-   // 2. Manual Check for Category
-   $cat = Category::where('name', $row[ 4 ])->first();
-   if (!$cat) {
-    $cat       = new Category();
-    $cat->name = $row[ 4 ];
+   $cat = Category::where('name', $row[ 4 ])->first() ?: (new Category([ 'name' => $row[ 4 ] ]));
+   if (!$cat->exists) {
     $cat->save();
    }
 
-   // 3. Manual Check for Source
-   $src = Source::where('name', $row[ 6 ])->first();
-   if (!$src) {
-    $src       = new Source();
-    $src->name = $row[ 6 ];
+   $src = Source::where('name', $row[ 6 ])->first() ?: (new Source([ 'name' => $row[ 6 ] ]));
+   if (!$src->exists) {
     $src->save();
    }
 
-   // 4. Manual Check for Transaction (to avoid duplicates in the main table)
+   // 3. Check for Duplicate Uploads (Integrity Check)
    $exists = Transaction::where([
     [ 'date', '=', $row[ 0 ] ],
     [ 'description', '=', $row[ 1 ] ],
@@ -68,22 +77,30 @@ class TransactionController extends Controller
     [ 'business_id', '=', $biz->id ],
     ])->exists();
 
-   if (!$exists) {
-    $transaction                   = new Transaction();
-    $transaction->date             = $row[ 0 ];
-    $transaction->description      = $row[ 1 ];
-    $transaction->amount           = $row[ 2 ];
-    $transaction->business_id      = $biz->id;
-    $transaction->category_id      = $cat->id;
-    $transaction->source_id        = $src->id;
-    $transaction->transaction_type = $row[ 5 ];
-    $transaction->status           = $row[ 7 ];
-    $transaction->save();
-    $count++;
+   if ($exists) {
+    $duplicates++;
+    continue;
    }
+
+   $transaction                   = new Transaction();
+   $transaction->date             = $row[ 0 ];
+   $transaction->description      = $row[ 1 ];
+   $transaction->amount           = $row[ 2 ];
+   $transaction->business_id      = $biz->id;
+   $transaction->category_id      = $cat->id;
+   $transaction->source_id        = $src->id;
+   $transaction->transaction_type = $row[ 5 ];
+   $transaction->status           = $row[ 7 ];
+   $transaction->save();
+   $count++;
   }
 
   fclose($handle);
-  return back()->with('success', "Processed $count records.");
+
+  if (0 === $count && $duplicates > 0) {
+   return back()->with('info', "No new records added. $duplicates duplicate rows were skipped.");
+  }
+
+  return back()->with('success', "Processed $count records. Skipped $duplicates duplicates.");
  }
 }

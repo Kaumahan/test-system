@@ -12,7 +12,7 @@
         
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
             <div>
-                <h1 class="text-2xl font-extrabold tracking-tight">Financial Ledger</h1>
+                <h1 class="text-2xl font-extrabold tracking-tight">Transactions</h1>
                 <p class="text-slate-500 text-sm">Manage normalized transaction data from CSV imports.</p>
             </div>
             
@@ -26,11 +26,34 @@
             </form>
         </div>
 
-        @if(session('success'))
-            <div class="mb-6 p-4 bg-emerald-50 border border-emerald-100 text-emerald-700 rounded-lg text-sm font-medium">
-                {{ session('success') }}
-            </div>
-        @endif
+    @if($errors->any())
+    <div class="mb-6 p-4 bg-rose-50 border border-rose-100 text-rose-700 rounded-lg text-sm font-medium">
+    <ul class="list-disc list-inside">
+        @foreach($errors->all() as $error)
+            <li>{{ $error }}</li>
+        @endforeach
+    </ul>
+    </div>
+    @endif
+
+    @if(session('error'))
+    <div class="mb-6 p-4 bg-amber-50 border border-amber-100 text-amber-700 rounded-lg text-sm font-medium">
+        <strong>Warning:</strong> {{ session('error') }}
+    </div>
+    @endif
+
+    @if(session('success'))
+    <div class="mb-6 p-4 bg-emerald-50 border border-emerald-100 text-emerald-700 rounded-lg text-sm font-medium">
+        <strong>Success!</strong> {{ session('success') }}
+    </div>
+    @endif
+
+    @if(session('info'))
+    <div class="mb-6 p-4 bg-blue-50 border border-blue-100 text-blue-700 rounded-lg text-sm font-medium">
+        <strong>Notice:</strong> {{ session('info') }}
+    </div>
+    @endif
+
 
         <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 mb-6">
             <form method="GET" action="{{ route('transactions.index') }}" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

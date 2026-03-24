@@ -16,15 +16,15 @@ return new class extends Migration
             $table->date('date');
             $table->string('description');
             $table->decimal('amount', 15, 2);
-            $table->string('business');
-            $table->string('category');
-            $table->string('transaction_type');
-            $table->string('source');
-            $table->string('status');
+            
+            // Foreign Keys
+            $table->foreignId('business_id')->constrained()->onDelete('cascade');
+            $table->foreignId('category_id')->constrained()->onDelete('cascade');
+            $table->foreignId('source_id')->constrained()->onDelete('cascade');
+            
+            $table->string('transaction_type'); // Income / Expense
+            $table->string('status');           // Pending / Reviewed
             $table->timestamps();
-
-            // Optional: Index for filtering performance
-            $table->index([ 'business', 'category', 'status' ]);
         });
     }
 
